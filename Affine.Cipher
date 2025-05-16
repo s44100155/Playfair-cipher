@@ -1,0 +1,52 @@
+import string
+from typing import Tuple
+
+def egcd(a: int, b: int) -> Tuple[int, int, int]:
+    if a == 0:
+        return (b, 0, 1)
+    else:
+        g, y, x = egcd(b % a, a)
+        return (g, x - (b // a) * y, y)
+
+def mod_inverse(a: int, m: int) -> int:
+    g, x, _ = egcd(a, m)
+    if g != 1:
+        raise ValueError(f"No modular inverse for a={a} under modulus m={m}")
+    return x % m
+
+def affine_encrypt(plaintext: str, a: int, b: int) -> str:
+    m = len(string.ascii_lowercase)  # 26
+    alphabet = string.ascii_lowercase
+    result = []
+    for ch in plaintext:
+        if ch in alphabet:
+            x = alphabet.index(ch)
+            y = (a * x + b) % m
+            result.append(alphabet[y])
+        else:
+            result.append(ch)
+    return "".join(result)
+
+def affine_decrypt(ciphertext: str, a: int, b: int) -> str:
+    m = len(string.ascii_lowercase)
+    alphabet = string.ascii_lowercase
+    a_inv = mod_inverse(a, m)
+    result = []
+    for ch in ciphertext:
+        if ch in alphabet:
+            y = alphabet.index(ch)
+            x = (a_inv * (y - b)) % m
+            result.append(alphabet[x])
+        else:
+            result.append(ch)
+    return "".join(result)
+
+if __name__ == "__main__":
+    key_a = 5
+    key_b = 8
+    plain = "hello world"
+    cipher = affine_encrypt(plain, key_a, key_b)
+    recovered = affine_decrypt(cipher, key_a, key_b)
+    print(f"Plaintext:  {plain}")
+    print(f"Encrypted:  {cipher}")
+    print(f"Decrypted:  {recovered}")
